@@ -6,7 +6,6 @@ const sharp = require('sharp');
 const app = express();
 let qrImageUrl = null;
 
-// Página web que mostra o QR Code
 app.get('/', (req, res) => {
   if (qrImageUrl) {
     res.send(`
@@ -21,7 +20,7 @@ app.get('/', (req, res) => {
     res.send(`
       <html>
         <body style="background:#111;display:flex;align-items:center;justify-content:center;height:100vh;">
-          <h2 style="color:white;font-family:sans-serif">⏳ Aguardando QR Code...</h2>
+          <h2 style="color:white;font-family:sans-serif">✅ Bot conectado!</h2>
         </body>
       </html>
     `);
@@ -41,7 +40,7 @@ const client = new Client({
 
 client.on('qr', async (qr) => {
   qrImageUrl = await QRCode.toDataURL(qr);
-  console.log('✅ QR Code gerado! Acesse a URL do Railway pra escanear.');
+  console.log('✅ QR Code gerado!');
 });
 
 client.on('ready', () => {
@@ -49,7 +48,12 @@ client.on('ready', () => {
   console.log('✅ Bot conectado e pronto!');
 });
 
-client.on('message', async (msg) => {
+client.on('message_create', async (msg) => {
+  // Só age se for mensagem enviada por você
+  if (!msg.fromMe) return;
+  // Só age no chat "Mensagens para mim"
+  if (!msg.to.includes(msg.from.replace('@c.us', ''))) return;
+
   if (msg.hasMedia && msg.type === 'image') {
     try {
       const media = await msg.downloadMedia();
@@ -70,8 +74,9 @@ client.on('message', async (msg) => {
       );
 
       await msg.reply(stickerMedia, null, { sendMediaAsSticker: true });
+      console.log('✅ Figurinha enviada!');
     } catch (err) {
-      await msg.reply('❌ Não consegui converter. Tenta outra foto!');
+      console.error('Erro:', err);
     }
   }
 });
