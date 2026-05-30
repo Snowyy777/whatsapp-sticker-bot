@@ -2,6 +2,9 @@ const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const QRCode = require('qrcode');
 const express = require('express');
 const sharp = require('sharp');
+const ffmpeg = require('fluent-ffmpeg');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 let qrImageUrl = null;
@@ -37,8 +40,8 @@ client.on('ready', () => {
 
 client.on('message_create', async (msg) => {
   if (!msg.fromMe) return;
-  console.log(`Mensagem enviada: tipo=${msg.type} to=${msg.to}`);
 
+  // Foto → Figurinha
   if (msg.hasMedia && msg.type === 'image') {
     try {
       const media = await msg.downloadMedia();
@@ -61,7 +64,41 @@ client.on('message_create', async (msg) => {
       await msg.reply(stickerMedia, null, { sendMediaAsSticker: true });
       console.log('✅ Figurinha enviada!');
     } catch (err) {
-      console.error('Erro:', err);
+      console.error('Erro figurinha:', err);
+    }
+  }
+
+  // Vídeo → GIF
+  if (msg.hasMedia && msg.type === 'video') {
+    try {
+      const media = await msg.downloadMedia();
+      const inputPath = `/tmp/video_${Date.now()}.mp4`;
+      const outputPath = `/tmp/gif_${Date.now()}.gif`;
+
+      fs.writeFileSync(inputPath, Buffer.from(media.data, 'base64'));
+
+      await new Promise((resolve, reject) => {
+        ffmpeg(inputPath)
+          .outputOptions([
+            '-vf', 'fps=10,scale=320:-1:flags=lanczos',
+            '-loop', '0'
+          ])
+          .output(outputPath)
+          .on('end', resolve)
+          .on('error', reject)
+          .run();
+      });
+
+      const gifData = fs.readFileSync(outputPath).toString('base64');
+      const gifMedia = new MessageMedia('image/gif', gifData, 'video.gif');
+
+      await msg.reply(gifMedia);
+      console.log('✅ GIF enviado!');
+
+      fs.unlinkSync(inputPath);
+      fs.unlinkSync(outputPath);
+    } catch (err) {
+      console.error('Erro GIF:', err);
     }
   }
 });
