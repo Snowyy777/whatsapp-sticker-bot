@@ -8,22 +8,9 @@ let qrImageUrl = null;
 
 app.get('/', (req, res) => {
   if (qrImageUrl) {
-    res.send(`
-      <html>
-        <body style="background:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;">
-          <h2 style="color:white;font-family:sans-serif">Escaneie com o WhatsApp</h2>
-          <img src="${qrImageUrl}" style="width:300px;height:300px"/>
-        </body>
-      </html>
-    `);
+    res.send(`<html><body style="background:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;"><h2 style="color:white;font-family:sans-serif">Escaneie com o WhatsApp</h2><img src="${qrImageUrl}" style="width:300px;height:300px"/></body></html>`);
   } else {
-    res.send(`
-      <html>
-        <body style="background:#111;display:flex;align-items:center;justify-content:center;height:100vh;">
-          <h2 style="color:white;font-family:sans-serif">✅ Bot conectado!</h2>
-        </body>
-      </html>
-    `);
+    res.send(`<html><body style="background:#111;display:flex;align-items:center;justify-content:center;height:100vh;"><h2 style="color:white;font-family:sans-serif">✅ Bot conectado!</h2></body></html>`);
   }
 });
 
@@ -48,12 +35,20 @@ client.on('ready', () => {
   console.log('✅ Bot conectado e pronto!');
 });
 
-client.on('message_create', async (msg) => {
-  // Só age se for mensagem enviada por você
-  if (!msg.fromMe) return;
-  // Só age no chat "Mensagens para mim"
-  if (!msg.to.includes(msg.from.replace('@c.us', ''))) return;
+// Mensagens recebidas de outros
+client.on('message', async (msg) => {
+  console.log(`Mensagem recebida: tipo=${msg.type} from=${msg.from} fromMe=${msg.fromMe}`);
+  await processarImagem(msg);
+});
 
+// Mensagens enviadas por você
+client.on('message_create', async (msg) => {
+  if (!msg.fromMe) return;
+  console.log(`Mensagem enviada: tipo=${msg.type} to=${msg.to}`);
+  await processarImagem(msg);
+});
+
+async function processarImagem(msg) {
   if (msg.hasMedia && msg.type === 'image') {
     try {
       const media = await msg.downloadMedia();
@@ -79,6 +74,6 @@ client.on('message_create', async (msg) => {
       console.error('Erro:', err);
     }
   }
-});
+}
 
 client.initialize();
