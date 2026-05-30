@@ -35,20 +35,10 @@ client.on('ready', () => {
   console.log('✅ Bot conectado e pronto!');
 });
 
-// Mensagens recebidas de outros
-client.on('message', async (msg) => {
-  console.log(`Mensagem recebida: tipo=${msg.type} from=${msg.from} fromMe=${msg.fromMe}`);
-  await processarImagem(msg);
-});
-
-// Mensagens enviadas por você
 client.on('message_create', async (msg) => {
   if (!msg.fromMe) return;
   console.log(`Mensagem enviada: tipo=${msg.type} to=${msg.to}`);
-  await processarImagem(msg);
-});
 
-async function processarImagem(msg) {
   if (msg.hasMedia && msg.type === 'image') {
     try {
       const media = await msg.downloadMedia();
@@ -74,6 +64,6 @@ async function processarImagem(msg) {
       console.error('Erro:', err);
     }
   }
-}
+});
 
 client.initialize();
