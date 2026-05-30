@@ -6,8 +6,10 @@ const path = require('path');
 
 const client = new Client({
   authStrategy: new LocalAuth(), // salva sessão pra não precisar escanear toda vez
-  puppeteer: { args: ['--no-sandbox'] }
-});
+  puppeteer: {
+  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
+  args: ['--no-sandbox', '--disable-setuid-sandbox']
+}
 
 // Mostra o QR Code no terminal
 client.on('qr', (qr) => {
