@@ -79,7 +79,7 @@ client.on('message_create', async (msg) => {
       await new Promise((resolve, reject) => {
         ffmpeg(inputPath)
           .outputOptions([
-            '-vf', 'fps=10,scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=0x00000000',
+            '-vf', 'fps=10,scale=512:-1',
             '-loop', '0',
             '-preset', 'default',
             '-an',
