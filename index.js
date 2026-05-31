@@ -4,7 +4,6 @@ const express = require('express');
 const sharp = require('sharp');
 const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
-const path = require('path');
 
 const app = express();
 let qrImageUrl = null;
@@ -68,37 +67,41 @@ client.on('message_create', async (msg) => {
     }
   }
 
-  // Vídeo → GIF
+  // Vídeo → Figurinha animada
   if (msg.hasMedia && msg.type === 'video') {
     try {
       const media = await msg.downloadMedia();
       const inputPath = `/tmp/video_${Date.now()}.mp4`;
-      const outputPath = `/tmp/gif_${Date.now()}.gif`;
+      const outputPath = `/tmp/sticker_${Date.now()}.webp`;
 
       fs.writeFileSync(inputPath, Buffer.from(media.data, 'base64'));
 
       await new Promise((resolve, reject) => {
         ffmpeg(inputPath)
           .outputOptions([
-            '-vf', 'fps=10,scale=320:-1:flags=lanczos',
-            '-loop', '0'
+            '-vf', 'fps=10,scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=0x00000000',
+            '-loop', '0',
+            '-preset', 'default',
+            '-an',
+            '-vsync', '0'
           ])
+          .toFormat('webp')
           .output(outputPath)
           .on('end', resolve)
           .on('error', reject)
           .run();
       });
 
-      const gifData = fs.readFileSync(outputPath).toString('base64');
-      const gifMedia = new MessageMedia('image/gif', gifData, 'video.gif');
+      const webpData = fs.readFileSync(outputPath).toString('base64');
+      const stickerMedia = new MessageMedia('image/webp', webpData, 'sticker.webp');
 
-      await msg.reply(gifMedia);
-      console.log('✅ GIF enviado!');
+      await msg.reply(stickerMedia, null, { sendMediaAsSticker: true });
+      console.log('✅ Figurinha animada enviada!');
 
       fs.unlinkSync(inputPath);
       fs.unlinkSync(outputPath);
     } catch (err) {
-      console.error('Erro GIF:', err);
+      console.error('Erro figurinha animada:', err);
     }
   }
 });
