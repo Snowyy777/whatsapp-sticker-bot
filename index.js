@@ -40,7 +40,7 @@ client.on('ready', () => {
 client.on('message_create', async (msg) => {
   if (!msg.fromMe) return;
 
-  // Foto → Figurinha
+  // Foto → Figurinha (tamanho original)
   if (msg.hasMedia && msg.type === 'image') {
     try {
       const media = await msg.downloadMedia();
@@ -48,8 +48,8 @@ client.on('message_create', async (msg) => {
 
       const webpBuffer = await sharp(inputBuffer)
         .resize(512, 512, {
-          fit: 'cover',
-          position: 'centre'
+          fit: 'contain',
+          background: { r: 0, g: 0, b: 0, alpha: 0 }
         })
         .webp()
         .toBuffer();
@@ -67,7 +67,7 @@ client.on('message_create', async (msg) => {
     }
   }
 
-  // Vídeo → Figurinha animada
+  // Vídeo → Figurinha animada (quadrada)
   if (msg.hasMedia && msg.type === 'video') {
     try {
       const media = await msg.downloadMedia();
