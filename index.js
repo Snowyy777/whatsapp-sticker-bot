@@ -41,7 +41,11 @@ client.on('message_create', async (msg) => {
   if (!msg.fromMe) return;
 
   // Só funciona no chat "Mensagens para mim"
-  if (msg.from !== msg.to) return;
+  const chat = await msg.getChat();
+  if (!chat.isGroup && chat.id._serialized !== client.info.wid._serialized) {
+    const contact = await msg.getContact();
+    if (!contact.isMe) return;
+  }
 
   // Foto → Figurinha (tamanho original)
   if (msg.hasMedia && msg.type === 'image') {
