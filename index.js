@@ -48,8 +48,8 @@ client.on('message_create', async (msg) => {
 
       const webpBuffer = await sharp(inputBuffer)
         .resize(512, 512, {
-          fit: 'contain',
-          background: { r: 0, g: 0, b: 0, alpha: 0 }
+          fit: 'cover',
+          position: 'centre'
         })
         .webp()
         .toBuffer();
@@ -79,7 +79,7 @@ client.on('message_create', async (msg) => {
       await new Promise((resolve, reject) => {
         ffmpeg(inputPath)
           .outputOptions([
-            '-vf', 'fps=10,scale=512:-1',
+            '-vf', 'fps=10,scale=512:512:force_original_aspect_ratio=increase,crop=512:512',
             '-loop', '0',
             '-preset', 'default',
             '-an',
