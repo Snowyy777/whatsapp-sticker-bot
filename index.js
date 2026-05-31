@@ -41,8 +41,7 @@ client.on('message_create', async (msg) => {
   if (!msg.fromMe) return;
 
   // Só funciona no chat "Mensagens para mim"
-  const meNumber = client.info.wid.user;
-  if (!msg.to.includes(meNumber)) return;
+  if (msg.from !== msg.to) return;
 
   // Foto → Figurinha (tamanho original)
   if (msg.hasMedia && msg.type === 'image') {
