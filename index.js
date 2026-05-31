@@ -39,7 +39,7 @@ client.on('ready', () => {
 
 client.on('message_create', async (msg) => {
   if (!msg.fromMe) return;
-  console.log(`from: ${msg.from} | to: ${msg.to}`);
+  if (msg.to !== '198011581927463@lid' && msg.from !== '198011581927463@lid') return;
 
   // Foto → Figurinha (tamanho original)
   if (msg.hasMedia && msg.type === 'image') {
