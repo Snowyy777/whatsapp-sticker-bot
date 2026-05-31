@@ -40,8 +40,8 @@ client.on('ready', () => {
 client.on('message_create', async (msg) => {
   if (!msg.fromMe) return;
 
-  // Só funciona no chat "Mensagens para mim"
   const me = client.info.wid._serialized;
+  console.log(`msg.to: ${msg.to} | me: ${me}`);
   if (msg.to !== me) return;
 
   // Foto → Figurinha (tamanho original)
